@@ -77,6 +77,29 @@ module.exports = function(app, shopData) {
       })
     });
 
+    app.get('/deleteuser', function (req,res) {
+      res.render('deleteuser.ejs', shopData);                                                                     
+    }); 
+
+    app.post('/deleted', function (req,res) {
+      //query database to remove user
+      let sqlquery = "DELETE FROM users WHERE username = ?"; 
+      let newrecord = req.body.username;
+      db.query(sqlquery, newrecord, (err, result) => {
+        if(err) {
+          return console.error(err.message);
+        }
+        //if the user is not in the database
+        else if (result.affectedRows === 0){
+          result = 'The username ' + req.body.username + ' could not be found';
+          res.send(result);
+        }
+        else {
+          res.redirect('/listusers');
+        }
+      });
+    });
+
     app.get('/list', function(req, res) {
         let sqlquery = "SELECT * FROM books"; // query database to get all the books
         // execute sql query
@@ -95,7 +118,7 @@ module.exports = function(app, shopData) {
       db.query(sqlquery, (err, result) => {
         if (err) {
           res.redirect('./');
-          //return console.error(err.message);
+          
         }
         let newData = Object.assign({}, shopData, {users:result});
         console.log(newData)
