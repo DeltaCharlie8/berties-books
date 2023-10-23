@@ -44,7 +44,7 @@ module.exports = function(app, shopData) {
           }
         let sqlquery = "INSERT INTO users (`username`, first_name, last_name, `email`, `hashedPassword`) VALUES (?,?,?,?,?)";
         // execute sql query
-        let newrecord = [req.body.username, req.body.first, req.body.last, req.body.email, req.body.hashedPassword];
+        let newrecord = [req.body.username, req.body.first, req.body.last, req.body.email, hashedPassword];
         db.query(sqlquery, newrecord, (err, result) => {
         //if it fails
           if (err) {
@@ -62,19 +62,31 @@ module.exports = function(app, shopData) {
     }); 
 
     app.post('/loggedin', function (req,res) {
-      bcrypt.compare(req.body.password, hashedPassword, function(err, result, msg) {
+      let sqlquery = "SELECT hashedPassword FROM users WHERE username = ?"
+      let newrecord = [req.body.username]
+      db.query(sqlquery, newrecord, (err, result) => {
         if(err) {
           return console.error(err.message);
         }
-        else if (result == true) {
-          msg = 'You are now logged in!';
-          res.send(msg);
-        }
         else {
-          msg = 'You have entered an incorrect password, please try again';
-          res.send(msg);
+          console.error("Success")
+
+          hashedPassword = result[0].hashedPassword;
+          bcrypt.compare(req.body.password, hashedPassword, function(err, result) {
+            if(err) {
+              return console.error(err.message);
+            }
+            else if (result == true) {
+              res.send('You are now logged in!');
+            }
+            else {
+              res.send('You have entered an incorrect password or username, please try again');
+            }
+          });
         }
-      })
+
+
+      });
     });
 
     app.get('/deleteuser', function (req,res) {
@@ -118,7 +130,7 @@ module.exports = function(app, shopData) {
       db.query(sqlquery, (err, result) => {
         if (err) {
           res.redirect('./');
-          
+
         }
         let newData = Object.assign({}, shopData, {users:result});
         console.log(newData)
