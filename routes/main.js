@@ -1,5 +1,10 @@
 module.exports = function(app, shopData) {
     const bcrypt = require('bcrypt');
+    const redirectLogin = (req, res, next) => {
+      if (!req.session.userID) {
+        res.redirect('./login')
+      } else { next (); }
+    }
 
     // Handle our routes
     app.get('/',function(req,res){
@@ -51,7 +56,7 @@ module.exports = function(app, shopData) {
             return console.error(err.message);
           }          
           result = 'Hello ' + req.body.first + ' ' + req.body.last + ' you are now registered! We will send a confirmation email to you at ' + req.body.email;
-          result += ' Your password is ' + plainPassword + ' and your hashed password is ' + hashedPassword;
+          result += ' Your password is ' + plainPassword + ' and your hashed password is ' + hashedPassword + '<a href='+'./'+'>Home</a>';
           res.send(result);
           });
         })                                                                             
@@ -77,15 +82,25 @@ module.exports = function(app, shopData) {
               return console.error(err.message);
             }
             else if (result == true) {
-              res.send('You are now logged in!');
+              //save user session here, when login is successful
+              req.session.userID = req.body.username;
+              //res.send('You are now logged in! <a href='+'./'+'>Home</a>');
+              res.send('Welcome ' + req.body.username + '. You are now logged in! <a href='+'./'+'>Home</a>');
             }
             else {
-              res.send('You have entered an incorrect password or username, please try again');
+              res.send('You have entered an incorrect, please try again');
             }
           });
         }
+      });
+    });
 
-
+    app.get('/logout', redirectLogin, (req,res) => {
+      req.session.destroy(err => {
+        if (err) {
+          return res.redirect('./')
+        }
+        res.send('You are now logged out. <a href='+'./'+'>Home</a>');
       });
     });
 
@@ -112,7 +127,7 @@ module.exports = function(app, shopData) {
       });
     });
 
-    app.get('/list', function(req, res) {
+    app.get('/list', redirectLogin, function(req, res) {
         let sqlquery = "SELECT * FROM books"; // query database to get all the books
         // execute sql query
         db.query(sqlquery, (err, result) => {
@@ -125,7 +140,7 @@ module.exports = function(app, shopData) {
          });
     });
 
-    app.get('/listusers', function(req, res){
+    app.get('/listusers', redirectLogin, function(req, res){
       let sqlquery = "SELECT username, first_name, last_name, email FROM users"; //query database to get all the users
       db.query(sqlquery, (err, result) => {
         if (err) {
@@ -138,7 +153,7 @@ module.exports = function(app, shopData) {
       });
     });
 
-    app.get('/addbook', function (req, res) {
+    app.get('/addbook', redirectLogin, function (req, res) {
         res.render('addbook.ejs', shopData);
      });
  
