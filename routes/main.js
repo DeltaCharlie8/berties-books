@@ -137,7 +137,7 @@ module.exports = function(app, shopData) {
       });
     });
 
-    app.get('/list', redirectLogin, function(req, res) {
+    app.get('/list', function(req, res) {
         let sqlquery = "SELECT * FROM books"; // query database to get all the books
         // execute sql query
         db.query(sqlquery, (err, result) => {
@@ -192,5 +192,34 @@ module.exports = function(app, shopData) {
           res.render("bargains.ejs", newData)
         });
     });       
+
+    app.get('/weather', function(req, res) {
+      res.render('weather.ejs', shopData);
+    });
+
+    app.post('/weather', function(req, res) {
+      const request = require('request');          
+        let apiKey = '1ce2ff03743b33be460a8b285c80fffc';
+        let city = req.body.city; //retrieves the city from the form input
+        let url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`             
+        request(url, function (err, response, body) {
+          if(err){
+            console.log('error:', err);
+          } else {
+            // res.send(body);
+            var weather = JSON.parse(body)
+            if (weather !== undefined && weather.main !== undefined){
+              var wmsg = 'It is '+ weather.main.temp + 
+              ' degrees in '+ weather.name +
+              '! <br> The humidity now is: ' + weather.main.humidity + 
+              ' <br> The wind speed is: ' + weather.wind.speed + 'mph <br><a href='+'./'+'>Home</a>';
+              res.send (wmsg);
+            }
+            else {
+              res.send ('No data found! <a href='+'./'+'>Home</a>')
+            }
+          } 
+        });
+    });
 
 }

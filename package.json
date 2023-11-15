@@ -131,6 +131,7 @@
     "range-parser": "^1.2.1",
     "raw-body": "^2.5.1",
     "readable-stream": "^2.3.7",
+    "request": "^2.88.2",
     "resolve": "^1.20.0",
     "rimraf": "^3.0.2",
     "safe-buffer": "^5.1.2",
