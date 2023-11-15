@@ -1,14 +1,16 @@
 // Import the modules we need
 var express = require ('express');
+var validator = require ('express-validator');
 var ejs = require('ejs');
 var bodyParser= require ('body-parser');
 var session = require ('express-session');
 const mysql = require('mysql');
+const expressSanitizer = require('express-sanitizer');
 
 // Create the express application object
 const app = express()
 const port = 8000
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.urlencoded({ extended: true }));
 
 //Create a session
 app.use(session({
@@ -19,6 +21,9 @@ app.use(session({
         expires: 600000
     }
 }));
+
+//create an input sanitizer
+app.use(expressSanitizer());
 
 // Set up css
 app.use(express.static(__dirname + '/public'));
